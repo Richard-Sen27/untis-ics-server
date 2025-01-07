@@ -4,6 +4,7 @@ import { WebUntis } from 'webuntis';
 import * as dotenv from 'dotenv';
 import { dateIntToDate } from './utils';
 import { decrypt, encrypt } from './encryption';
+import path from 'path';
 
 const app = express();
 app.use(express.json());
@@ -12,8 +13,9 @@ dotenv.config({ path: '.env'});
 const PORT = process.env.PORT || 3100;
 
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-})
+  const filePath = path.join(__dirname, '..', 'index.html');
+  res.sendFile(filePath);
+});
 
 app.get('/test', async (req, res) => {
 
