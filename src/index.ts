@@ -11,7 +11,11 @@ dotenv.config({ path: '.env.local'});
 
 const PORT = process.env.PORT || 3100;
 
-app.get('/', async (req, res) => {
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
+})
+
+app.get('/test', async (req, res) => {
 
     const { token } = req.query;
 

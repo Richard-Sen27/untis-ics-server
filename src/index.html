@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendar Subscription</title>
+  <style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      max-width: 400px;
+      width: 90%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .container h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #0078d7;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group button {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    .form-group button {
+      background: #0078d7;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+
+    .form-group button:hover {
+      background: #005bb5;
+    }
+
+    .calendar-url {
+      margin-top: 20px;
+      padding: 10px;
+      background: #e8f5e9;
+      border: 1px solid #a5d6a7;
+      border-radius: 5px;
+      color: #2e7d32;
+      font-weight: bold;
+      text-align: center;
+      text-wrap: unset;
+      overflow-y: auto;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Subscribe to Your Calendar</h1>
+    <form id="calendar-form">
+      <div class="form-group">
+        <label for="user">Username</label>
+        <input type="text" id="user" name="user" placeholder="Enter your username" required />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required />
+      </div>
+      <div class="form-group">
+        <label for="school">School</label>
+        <input type="text" id="school" name="school" placeholder="Search your school" required />
+      </div>
+      <div class="form-group">
+        <label for="domain">Domain</label>
+        <input type="text" id="domain" name="domain" placeholder="Enter your school domain" required />
+      </div>
+      <div class="form-group">
+        <button type="submit">Generate Calendar URL</button>
+      </div>
+    </form>
+    <div id="calendar-url" class="calendar-url" style="display: none;" onclick="copyToClipboard(this)"></div>
+  </div>
+
+  <script>
+    // Function to copy text to clipboard and show a visual response
+    function copyToClipboard(element) {
+      const text = element.textContent; // Get the text from the element
+      navigator.clipboard.writeText(text).then(() => {
+        // Temporarily change the content to indicate success
+        const originalText = element.textContent;
+        element.textContent = 'Copied to clipboard!';
+        element.style.backgroundColor = '#c8e6c9'; // Light green background
+        element.style.color = '#2e7d32'; // Dark green text
+  
+        setTimeout(() => {
+          // Revert to the original text and style
+          element.textContent = originalText;
+          element.style.backgroundColor = '#e8f5e9';
+          element.style.color = '#2e7d32';
+        }, 1500); // Show the message for 1.5 seconds
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+        alert('Failed to copy URL. Please try again.');
+      });
+    }
+  </script>
+
+  <script>
+    const form = document.getElementById('calendar-form');
+    const calendarUrlDiv = document.getElementById('calendar-url');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const user = document.getElementById('user').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const school = document.getElementById('school').value.trim();
+      const domain = document.getElementById('domain').value.trim();
+
+      if (!user || !password || !school || !domain) {
+        alert('Please fill in all fields.');
+        return;
+      }
+
+      try {
+        // Send data to /encrypt
+        const response = await fetch('/encrypt', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ user, password, school, domain }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to encrypt data. Please try again.');
+        }
+
+        const { token } = await response.json();
+
+        // Display the calendar URL with the token
+        const calendarUrl = `/calendar.ics?token=${encodeURIComponent(token)}`;
+        calendarUrlDiv.textContent = `${window.location.origin}${calendarUrl}`;
+        calendarUrlDiv.style.display = 'block';
+      } catch (error) {
+        console.error(error);
+        alert('An error occurred: ' + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
