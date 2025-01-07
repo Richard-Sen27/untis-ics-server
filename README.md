@@ -1,5 +1,7 @@
 # Untis ICS Calender Generator
 
+![License: Personal Use Only](https://img.shields.io/badge/license-personal--use--only-red)
+
 ## About
 
 I created this project just for fun, as some of my friends mentioned it would be nice to have the school data from WebUntis in the personal calendar. So I simply started and here we are. Please note that this is a fun project and it is very likely here are some bugs hidden. If you find some, do not hesitate to create an issue or contact me.
