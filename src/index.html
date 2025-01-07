@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendar Subscription</title>
+  <title>Untis Calendar Subscription</title>
   <style>
     * {
         box-sizing: border-box;
@@ -48,7 +48,6 @@
     }
 
     .form-group input,
-    .form-group select,
     .form-group button {
       width: 100%;
       padding: 10px;
@@ -105,6 +104,14 @@
         <input type="text" id="domain" name="domain" placeholder="Enter your school domain" required />
       </div>
       <div class="form-group">
+        <label for="from">From</label>
+        <input type="date" id="from" name="from" required />
+      </div>
+      <div class="form-group">
+        <label for="to">To</label>
+        <input type="date" id="to" name="to" required />
+      </div>
+      <div class="form-group">
         <button type="submit">Generate Calendar URL</button>
       </div>
     </form>
@@ -146,8 +153,10 @@
       const password = document.getElementById('password').value.trim();
       const school = document.getElementById('school').value.trim();
       const domain = document.getElementById('domain').value.trim();
+      const from = document.getElementById('from').value;
+      const to = document.getElementById('to').value;
 
-      if (!user || !password || !school || !domain) {
+      if (!user || !password || !school || !domain || !from || !to) {
         alert('Please fill in all fields.');
         return;
       }
@@ -168,8 +177,8 @@
 
         const { token } = await response.json();
 
-        // Display the calendar URL with the token
-        const calendarUrl = `/calendar.ics?token=${encodeURIComponent(token)}`;
+        // Display the calendar URL with the token and date range
+        const calendarUrl = `/calendar.ics?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&token=${encodeURIComponent(token)}`;
         calendarUrlDiv.textContent = `${window.location.origin}${calendarUrl}`;
         calendarUrlDiv.style.display = 'block';
       } catch (error) {

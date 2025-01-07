@@ -7,7 +7,7 @@ import { decrypt, encrypt } from './encryption';
 
 const app = express();
 app.use(express.json());
-dotenv.config({ path: '.env.local'});
+dotenv.config({ path: '.env'});
 
 const PORT = process.env.PORT || 3100;
 
@@ -17,7 +17,7 @@ app.get('/', (req, res) => {
 
 app.get('/test', async (req, res) => {
 
-    const { token } = req.query;
+    const { token, from, to } = req.query;
 
     if (!token) {
         res.status(400).send('Missing token');
@@ -25,12 +25,17 @@ app.get('/test', async (req, res) => {
     }
 
     const data = decrypt(token as string);
+    const fromDate = from ? new Date(from as string) : null;
+    const toDate = to ? new Date(to as string) : null;
 
     try {
         const untis = new WebUntis(data.school, data.user, data.password, data.domain);
         await untis.login()
-        const timetable = await untis.getOwnTimetableForToday()
-        await untis.logout()
+        const timetable = fromDate && toDate ? 
+        await untis.getOwnTimetableForRange(fromDate, toDate) : 
+        await untis.getOwnTimetableForToday();
+      
+      await untis.logout();
 
         res.json(timetable);
     } catch {
@@ -84,23 +89,27 @@ app.post('/decrypt', async (req, res) => {
 
 app.get('/calendar.ics', async (req, res) => {
     
-    const { token } = req.query;
+    const { token, from, to } = req.query;
 
     if (!token) {
         res.status(400).send('Missing token');
         return;
     }
 
+    const fromDate = from ? new Date(from as string) : null;
+    const toDate = to ? new Date(to as string) : null;
+
     const data = decrypt(token as string);  
     const untis = new WebUntis(data.school, data.user, data.password, data.domain);
 
     try {
       await untis.login();
-      const timetable = await untis.getOwnTimetableForToday();
+      const timetable = fromDate && toDate ? 
+        await untis.getOwnTimetableForRange(fromDate, toDate) : 
+        await untis.getOwnTimetableForToday();
+      
       await untis.logout();
 
-      console.log(timetable);
-  
       const calendar = ical({ name: `${data.user}'s WebUntis Calendar` });
   
       timetable.forEach((entry) => {
@@ -109,9 +118,10 @@ app.get('/calendar.ics', async (req, res) => {
         calendar.createEvent({
           start,
           end,
-          summary: entry.su[0]?.name || 'Untitled Event',
+          summary: (entry.su[0]?.name || 'Untitled Event') + (entry.code ? ` [${entry.code}]` : ''),
           location: entry.ro[0]?.name || 'Unknown Location',
-          description: `Teacher: ${entry.te[0]?.name || 'Unknown'}`,
+          description: 
+            `Teacher: ${entry.te.map((t, i) => (i !== 0 ? ", " : "") + t.longname + " (" + t.name + ")").join("") || 'N/A'}\nInfo: ${entry.info || 'N/A'}`
         });
       });
   

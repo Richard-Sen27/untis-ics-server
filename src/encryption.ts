@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 import * as dotenv from 'dotenv';
 
-dotenv.config({ path: '.env.local'});
+dotenv.config({ path: '.env'});
 
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || ''; // Must be 32 bytes for AES-256
 const IV_LENGTH = 16; // AES requires a 16-byte IV
