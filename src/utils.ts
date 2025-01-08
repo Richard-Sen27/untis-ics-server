@@ -1,3 +1,7 @@
+import * as dotenv from 'dotenv';
+
+dotenv.config({ path: '.env'});
+
 function dateIntToDate(date: number, time: number): Date {
     const dateString = date.toString();
     const timeString = time.toString().padStart(4, "0"); // Pad to ensure 4 digits    
@@ -15,4 +19,10 @@ function timeIntToString(time: number): string {
     return `${timeString.slice(0, timeString.length - 2)}:${timeString.slice(timeString.length - 2)}`;
 }
 
-export { timeIntToString, dateIntToDate };
+function toGMT(date: Date): Date {
+    const gmtOffset = process.env.GMT_OFFSET ? parseInt(process.env.GMT_OFFSET) : 0;
+    const timezoneOffset = gmtOffset * 60; // GMT+1 in minutes
+    return new Date(date.getTime() - timezoneOffset * 60000);
+}
+
+export { timeIntToString, dateIntToDate, toGMT };

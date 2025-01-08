@@ -4,6 +4,7 @@ import { WebUntis } from 'webuntis';
 import * as dotenv from 'dotenv';
 import { decrypt, encrypt } from './encryption';
 import path from 'path';
+import { toGMT } from './utils';
 
 const app = express();
 app.use(express.json());
@@ -39,11 +40,11 @@ app.get('/test', async (req, res) => {
       await untis.logout();
 
         const entry = timetable[0];
-        console.log(entry.date.toString(), "" , entry.startTime);
+        console.log(entry.date.toString(), "" , 800);
 
         // Convert Untis date and time to a Date object
         const date = WebUntis.convertUntisDate(entry.date.toString());
-        const time = WebUntis.convertUntisTime(entry.startTime, date);
+        const time = WebUntis.convertUntisTime(800, date);
 
         // Adjust timezone to GMT+1
         const timezoneOffset = 1 * 60; // GMT+1 in minutes
@@ -128,8 +129,8 @@ app.get('/calendar.ics', async (req, res) => {
       const calendar = ical({ name: `${data.user}'s WebUntis Calendar` });
   
       timetable.forEach((entry) => {
-        const start = WebUntis.convertUntisTime(entry.startTime, WebUntis.convertUntisDate(entry.date.toString()))
-        const end = WebUntis.convertUntisTime(entry.endTime, WebUntis.convertUntisDate(entry.date.toString()))
+        const start = toGMT(WebUntis.convertUntisTime(entry.startTime, WebUntis.convertUntisDate(entry.date.toString())))
+        const end = toGMT(WebUntis.convertUntisTime(entry.endTime, WebUntis.convertUntisDate(entry.date.toString())))
         calendar.createEvent({
           start,
           end,
@@ -172,7 +173,6 @@ app.get('/schoolSearch', async (req, res) => {
       server: school.server, 
       loginName: school.loginName 
     }))
-    console.log("Short response: ", short)
     res.json(short)
   } catch {
     res.status(500)
