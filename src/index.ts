@@ -115,8 +115,8 @@ app.get('/calendar.ics', async (req, res) => {
       const calendar = ical({ name: `${data.user}'s WebUntis Calendar` });
   
       timetable.forEach((entry) => {
-        const start = dateIntToDate(entry.date, entry.startTime);
-        const end = dateIntToDate(entry.date, entry.endTime);
+        const start = WebUntis.convertUntisTime(entry.startTime, WebUntis.convertUntisDate(entry.date.toString()))
+        const end = WebUntis.convertUntisTime(entry.endTime, WebUntis.convertUntisDate(entry.date.toString()))
         calendar.createEvent({
           start,
           end,
@@ -138,6 +138,27 @@ app.get('/calendar.ics', async (req, res) => {
       return
     }
 });
+
+app.get('/schoolSearch', async (req, res) => {
+  const { query } = req.query
+
+  try{
+    const response = await fetch('https://mobile.webuntis.com/ms/schoolquery2', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: `wu_schulsuche-${Date.now()}`,
+        method: 'searchSchool',
+        params: [{ search: query }],
+        jsonrpc: '2.0',
+      }),
+    });
+    const { result } = await response.json()
+    res.json(result)
+  } catch {
+    res.status(500)
+  }
+})
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
