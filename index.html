@@ -229,8 +229,8 @@
         const result = await response.json();
         schoolOptions.innerHTML = '';
 
-        if (result.schools.length > 0) {
-          result.schools.forEach((school) => {
+        if (result.length > 0) {
+          result.forEach((school) => {
             const option = document.createElement('li');
             option.textContent = school.displayName;
             option.style.cursor = 'pointer';

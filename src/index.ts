@@ -2,7 +2,6 @@ import express from 'express';
 import ical from 'ical-generator';
 import { WebUntis } from 'webuntis';
 import * as dotenv from 'dotenv';
-import { dateIntToDate } from './utils';
 import { decrypt, encrypt } from './encryption';
 import path from 'path';
 
@@ -39,7 +38,21 @@ app.get('/test', async (req, res) => {
       
       await untis.logout();
 
-        res.json(timetable);
+        const entry = timetable[0];
+        console.log(entry.date.toString(), "" , entry.startTime);
+
+        // Convert Untis date and time to a Date object
+        const date = WebUntis.convertUntisDate(entry.date.toString());
+        const time = WebUntis.convertUntisTime(entry.startTime, date);
+
+        // Adjust timezone to GMT+1
+        const timezoneOffset = 1 * 60; // GMT+1 in minutes
+        const gmtPlusOneTime = new Date(time.getTime() - timezoneOffset * 60000);
+
+        console.log('Original Time:', time); // Time in the default timezone
+        console.log('Time in GMT+1:', gmtPlusOneTime); // Adjusted time
+
+        res.json(gmtPlusOneTime);
     } catch {
         console.log('Error fetching timetable');
         res.status(500).send('Error fetching timetable');
@@ -154,7 +167,13 @@ app.get('/schoolSearch', async (req, res) => {
       }),
     });
     const { result } = await response.json()
-    res.json(result)
+    const short = result.schools.map((school: any) => ({ 
+      displayName: school.displayName, 
+      server: school.server, 
+      loginName: school.loginName 
+    }))
+    console.log("Short response: ", short)
+    res.json(short)
   } catch {
     res.status(500)
   }
