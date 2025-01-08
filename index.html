@@ -215,43 +215,48 @@
     const domainInput = document.getElementById('domain');
     const calendarUrlDiv = document.getElementById('calendar-url');
 
+    let debounceTimeout; // Variable to store the debounce timeout
+
     // Function to search for schools
-    schoolSearch.addEventListener('input', async () => {
-      const searchQuery = schoolSearch.value.trim();
-      if (!searchQuery) {
-        schoolOptions.style.display = 'none';
-        return;
-      }
+    schoolSearch.addEventListener('input', () => {
+      clearTimeout(debounceTimeout); // Clear any existing timeout
 
-      try {
-        const response = await fetch(`/schoolSearch?query=${searchQuery}`)
+      debounceTimeout = setTimeout(async () => {
+        const searchQuery = schoolSearch.value.trim();
+        if (!searchQuery) {
+          schoolOptions.style.display = 'none';
+          return;
+        }
 
-        const result = await response.json();
-        schoolOptions.innerHTML = '';
+        try {
+          const response = await fetch(`/schoolSearch?query=${encodeURIComponent(searchQuery)}`);
+          const result = await response.json();
+          schoolOptions.innerHTML = '';
 
-        if (result.length > 0) {
-          result.forEach((school) => {
-            const option = document.createElement('li');
-            option.textContent = school.displayName;
-            option.style.cursor = 'pointer';
-            option.style.padding = '10px';
-            option.style.borderBottom = '1px solid #ddd';
-            option.addEventListener('click', () => {
-              schoolSearch.value = school.displayName;
-              schoolInput.value = school.loginName;
-              domainInput.value = school.server;
-              schoolOptions.style.display = 'none';
+          if (result.length > 0) {
+            result.forEach((school) => {
+              const option = document.createElement('li');
+              option.textContent = school.displayName;
+              option.style.cursor = 'pointer';
+              option.style.padding = '10px';
+              option.style.borderBottom = '1px solid #ddd';
+              option.addEventListener('click', () => {
+                schoolSearch.value = school.displayName;
+                schoolInput.value = school.loginName;
+                domainInput.value = school.server;
+                schoolOptions.style.display = 'none';
+              });
+              schoolOptions.appendChild(option);
             });
-            schoolOptions.appendChild(option);
-          });
-          schoolOptions.style.display = 'block';
-        } else {
+            schoolOptions.style.display = 'block';
+          } else {
+            schoolOptions.style.display = 'none';
+          }
+        } catch (error) {
+          console.error('Error fetching schools:', error);
           schoolOptions.style.display = 'none';
         }
-      } catch (error) {
-        console.error('Error fetching schools:', error);
-        schoolOptions.style.display = 'none';
-      }
+      }, 300); // Wait 300ms after the last input before making the request
     });
 
     form.addEventListener('submit', async (event) => {
