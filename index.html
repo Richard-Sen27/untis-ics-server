@@ -184,6 +184,30 @@
   </div>
 
   <script>
+    // Function to copy text to clipboard and show a visual response
+    function copyToClipboard(element) {
+      const text = element.textContent; // Get the text from the element
+      navigator.clipboard.writeText(text).then(() => {
+        // Temporarily change the content to indicate success
+        const originalText = element.textContent;
+        element.textContent = 'Copied to clipboard!';
+        element.style.backgroundColor = '#c8e6c9'; // Light green background
+        element.style.color = '#2e7d32'; // Dark green text
+  
+        setTimeout(() => {
+          // Revert to the original text and style
+          element.textContent = originalText;
+          element.style.backgroundColor = '#e8f5e9';
+          element.style.color = '#2e7d32';
+        }, 1500); // Show the message for 1.5 seconds
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+        alert('Failed to copy URL. Please try again.');
+      });
+    }
+  </script>
+
+  <script>
     const form = document.getElementById('calendar-form');
     const schoolSearch = document.getElementById('school-search');
     const schoolOptions = document.getElementById('school-options');
