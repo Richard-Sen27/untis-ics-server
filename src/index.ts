@@ -21,6 +21,10 @@ app.get('/test', async (req, res) => {
 
     const { token, from, to } = req.query;
 
+    if (process.env.ENVIROMENT === 'production') {
+      res.status(403).send('This endpoint is disabled in production');
+    }
+
     if (!token) {
         res.status(400).send('Missing token');
         return;
@@ -84,6 +88,10 @@ app.post('/encrypt', async (req, res) => {
 
 app.post('/decrypt', async (req, res) => {
   const { token } = req.body;
+
+  if (process.env.ENVIROMENT === 'production') {
+    res.status(403).send('This endpoint is disabled in production');
+  }
 
   // Validate input
   if (!token) {
