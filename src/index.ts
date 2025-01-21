@@ -17,6 +17,11 @@ app.get('/', (req, res) => {
   res.sendFile(filePath);
 });
 
+app.get('/health', (req, res) => {
+  console.log('Health check successful');
+  res.status(200).send('OK');
+});
+
 app.get('/test', async (req, res) => {
 
     const { token, from, to } = req.query;
