@@ -116,6 +116,51 @@ app.post('/decrypt', async (req, res) => {
   }
 })
 
+app.get('/absence', async (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    res.status(400).send('Missing token');
+    return;
+  }
+
+  const data = decrypt(token as string);
+  const untis = new WebUntis(data.school, data.user, data.password, data.domain);
+
+  try {
+    await untis.login();
+
+    const fromDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+    const toDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+    
+    const absences = await untis.getAbsentLesson(fromDate, toDate);
+    await untis.logout();
+
+    let totalAbsenceMinutes = 0
+    let unexcusedAbsenceMinutes = 0
+
+    absences.absences.forEach((absence) => {
+      const from = WebUntis.convertUntisTime(absences.absences[0].startTime, WebUntis.convertUntisDate(absences.absences[0].startDate.toString()))
+      const to = WebUntis.convertUntisTime(absences.absences[0].endTime, WebUntis.convertUntisDate(absences.absences[0].startDate.toString()))
+      const duration = (to.getTime() - from.getTime()) / 60000
+      
+      totalAbsenceMinutes += duration
+      if (!absence.isExcused) {
+        unexcusedAbsenceMinutes += duration
+      }
+    })
+    
+    res.json({
+      absences: absences.absences.length,
+      totalAbsenceMinutes, 
+      unexcusedAbsenceMinutes,
+    });
+  } catch (error) {
+    console.error('Error fetching absences:', error);
+    res.status(500).send('Error fetching absences');
+  }
+})
+
 app.get('/calendar.ics', async (req, res) => {
     
     const { token, from, to } = req.query;
