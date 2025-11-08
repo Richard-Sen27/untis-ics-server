@@ -215,7 +215,7 @@ app.get('/calendar.ics', async (req, res) => {
           end,
           summary: `${subject} ${code}`,
           location: room,
-          description: `${teachers}\n\n${info}\n\n${lessonText}\n\n\n${JSON.stringify(entry, null, 2)}`,
+          description: `${teachers}\n\n${info}\n\n${lessonText}`,
         });
       });
   
