@@ -10,6 +10,11 @@ const app = express();
 app.use(express.json());
 dotenv.config({ path: '.env'});
 
+// Ensure a sensible default timezone for environments (like some cloud hosts)
+// that run with UTC by default. If you prefer to control this from the host,
+// set the TZ env var (e.g. TZ=Europe/Berlin) in Render's service settings.
+process.env.TZ = process.env.TZ || 'Europe/Berlin';
+
 const PORT = process.env.PORT || 3100;
 
 app.get('/', (req, res) => {
@@ -184,7 +189,10 @@ app.get('/calendar.ics', async (req, res) => {
       
       await untis.logout();
 
-      const calendar = ical({ name: `${data.user}'s WebUntis Calendar` });
+  // Provide timezone metadata to the generated calendar so clients render
+  // event times in the correct IANA timezone instead of relying on the
+  // server's system timezone.
+  const calendar = ical({ name: `${data.user}'s WebUntis Calendar`, timezone: process.env.TZ });
   
       timetable.forEach((entry) => {
         const untisDate = WebUntis.convertUntisDate(entry.date.toString());
@@ -251,5 +259,11 @@ app.get('/schoolSearch', async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    console.log('Server timezone (Date):', new Date().toString());
+    try {
+      console.log('Resolved TZ:', Intl.DateTimeFormat().resolvedOptions().timeZone);
+    } catch (e) {
+      // some very old runtimes may not support this; ignore in that case.
+    }
 })
 
