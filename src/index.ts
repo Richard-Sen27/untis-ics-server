@@ -201,21 +201,21 @@ app.get('/calendar.ics', async (req, res) => {
         const start = toGMT(rawStart);
         const end = toGMT(rawEnd);
 
-        const subject = entry.su[0]?.name || '📚 Untitled Lesson';
-        const exkursion = entry.lstext || entry.substText
+        const subject = entry.su[0]?.name || entry.substText || '📚 Untitled Lesson';
         const room = entry.ro[0]?.name || '🏫 Unknown Room';
         const code = entry.code ? `🔖 ${entry.code}` : '';
         const teachers = entry.te?.length
           ? entry.te.map((t) => `👩‍🏫 ${t.longname} (${t.name})`).join('\n')
           : '👤 N/A';
         const info = entry.info ? `💬 ${entry.info}` : '💬 No additional info';
+        const lessonText = entry.lstext ? `📝 ${entry.lstext}` : '';
 
         calendar.createEvent({
           start,
           end,
-          summary: exkursion ? `${exkursion}` : `${subject} ${code}`,
+          summary: `${subject} ${code}`,
           location: room,
-          description: `${teachers}\n\n${info}`,
+          description: `${teachers}\n\n${info}\n\n${lessonText}\n\n\n${JSON.stringify(entry, null, 2)}`,
         });
       });
   
