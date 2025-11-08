@@ -187,14 +187,18 @@ app.get('/calendar.ics', async (req, res) => {
       const calendar = ical({ name: `${data.user}'s WebUntis Calendar` });
   
       timetable.forEach((entry) => {
-        const start = toGMT(WebUntis.convertUntisTime(entry.startTime, WebUntis.convertUntisDate(entry.date.toString())))
-        const end = toGMT(WebUntis.convertUntisTime(entry.endTime, WebUntis.convertUntisDate(entry.date.toString())))
+        const untisDate = WebUntis.convertUntisDate(entry.date.toString());
+        const rawStart = WebUntis.convertUntisTime(entry.startTime, untisDate);
+        const rawEnd = WebUntis.convertUntisTime(entry.endTime, untisDate);
+        const start = toGMT(rawStart);
+        const end = toGMT(rawEnd);
+
         calendar.createEvent({
           start,
           end,
           summary: (entry.su[0]?.name || 'Untitled Event') + (entry.code ? ` [${entry.code}]` : ''),
           location: entry.ro[0]?.name || 'Unknown Location',
-          description: 
+          description:
             `Teacher: ${entry.te.map((t, i) => (i !== 0 ? ", " : "") + t.longname + " (" + t.name + ")").join("") || 'N/A'}\nInfo: ${entry.info || 'N/A'}`
         });
       });

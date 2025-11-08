@@ -20,9 +20,12 @@ function timeIntToString(time: number): string {
 }
 
 function toGMT(date: Date): Date {
-    const gmtOffset = process.env.GMT_OFFSET ? parseInt(process.env.GMT_OFFSET) : 0;
-    const timezoneOffset = gmtOffset * 60; // GMT+1 in minutes
-    return new Date(date.getTime() - timezoneOffset * 60000);
+    // The `WebUntis.convertUntisTime` method already returns a JS Date representing
+    // the correct local wall-clock time for the event. Manually adjusting that
+    // Date with a fixed or environment-provided offset is error-prone across DST
+    // transitions. To keep times accurate, return a copy of the original Date
+    // unchanged.
+    return new Date(date.getTime());
 }
 
 export { timeIntToString, dateIntToDate, toGMT };
