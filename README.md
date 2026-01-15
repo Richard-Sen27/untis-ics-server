@@ -17,3 +17,13 @@ The core of this application is in the backend, a simple Express.js server. The 
 ## Application in your own Calendar
 
 This depends on your system and the used calendar software. All common calendars suport `Calendar Subscriptions`. Just copy the URL from the genrator and paste it to the required input and you are done.
+
+## Get the application running
+
+```sh
+# build
+docker build --tag "untis-ics" .
+
+# run
+docker run -d --name "untis-ics" -p "4500:4500" untis-ics
+```

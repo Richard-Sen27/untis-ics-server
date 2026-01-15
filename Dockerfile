@@ -1,4 +1,4 @@
-ARG server-port=3000
+ARG server-port=4500
 # Stage 1: Build Stage
 FROM node:21-alpine AS builder
 
@@ -35,7 +35,7 @@ RUN npm ci --only=production
 
 # Add a health check
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl -f http://localhost:${server-port}/health || exit 1
+  CMD wget -qO- http://localhost:4500/health || exit 1
 
 # Create a non-root user and switch to it
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
